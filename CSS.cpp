@@ -25,9 +25,11 @@ int main(){
         cin>>n;
         for(int i=1;i<=n;i++) 
         {
+            //a[i]=510510;
             cin>>a[i];
             if(a[i]<0) a[i]*=-1;
         }
+        a[0]=0;
         for(int i=1;i<=n;i++) if(!b[i].empty()) b[i].clear();
         for(int i=1;i<=n;i++)
         {
@@ -35,7 +37,8 @@ int main(){
             while(x>1)
             {
                 int p=min_prime[x];
-                b[p].push_back(i);
+                if(a[i-1]%p==0) // Reduce the number of elements in vector b
+                    b[p].push_back(i); 
                 while(min_prime[x]==p)
                     x/=p;
             }
@@ -52,7 +55,9 @@ int main(){
                 ans=max(ans,cnt);
             }
         }
-        cout<<ans<<'\n';
+
+         cout<<ans<<'\n';
     }
     return 0;
 }
+// Time elapsed: 0.504891 s with n=1000000 and a[i]=510510.
