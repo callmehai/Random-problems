@@ -113,7 +113,7 @@ void Missing_Min()
     inv_2=inv_mod(2);
     ll i=1,nxt=-1;
     ll ans=0;
-    while(nxt<n)
+    while(nxt<=n)
     {
         ll q=n/i;
         nxt=n/q+1;
