@@ -1,4 +1,6 @@
-//#pragma GCC optimize ("O3")
+//https://oj.vnoi.info/problem/icpc24_mt_m
+
+#pragma GCC optimize ("O3")
 
 //#include <bits/stdc++.h>
 
@@ -67,25 +69,7 @@ int mod=1e9+7; // MODDDDDDDDDDDDD
 template<typename T>void minimize(T &a, T b){ if(a>b)  a=b; }
 template<typename T>void maximize(T &a, T b){ if(a<b)  a=b; }
 template<typename T>void add(T &a, T b){ a+=b; if(a>=mod) a-=mod; }
-template<typename T> T gcd(T a, T b)
-{
-    if(a<b) swap(a,b);
-    while(a){
-        b%=a;
-        swap(a,b);
-    }
-    return b;
-}
-vector<pair<int,int>> queen  = {{-1,0},{0,-1},{0,1},{1,0},{-1,-1},{-1,1},{1,-1},{1,1}};
-vector<pair<int,int>> knight = {{-1,-2},{-1,2},{1,-2},{1,2},{-2,-1},{-2,1},{2,-1},{2,1}};
-vector<pair<int,int>> bishop = {{-1,-1},{-1,1},{1,-1},{1,1}};
-vector<pair<int,int>> rook   = {{-1,0},{0,-1},{0,1},{1,0}};
-ll rand_num(ll a,ll b) {
-    random_device rd;
-    mt19937 mt(rd());
-    uniform_int_distribution<ll> dist(a,b);
-    return dist(mt);
-}
+
 
 void read_file()
 {
@@ -95,78 +79,71 @@ void read_file()
 
 
 // =========> <3 VietHai1709 <3  <=========
+const int N=401;
+const int M=1e5+5;
+bool mark[N][M];
+int dis[N][N];
 struct DSU {
-    int n;
-    int cnt;
-    vector<int> pa;
-    vt<vt<pii>> edge;
-    vt<int> vis;
-    DSU(int _n) {
-        n = _n;
-        cnt=n;
-        pa.resize(n+1,-1);
-        edge.resize(n+1);
-        vis.resize(n+1,0);
+    int pa[N];
+    DSU() {
+        memset(pa,-1,sizeof(pa));
+    }
+    void init(int n){
+        memset(pa,-1, (n+1)*sizeof(int));
     }
     int root(int u) {
         return pa[u] < 0 ? u : pa[u] = root(pa[u]);
     }
-    int group_count(){
-        return cnt;
-    }
-    int count(int u){
-        return -pa[root(u)];
-    }
     bool share(int u,int v){
         return root(u) == root(v);
     }
-    bool merge(int u, int v,int x) {
+    bool merge(int u, int v) {
         u = root(u); v = root(v);
         if (u == v) return 0;
         if(pa[u] > pa[v]) swap(u,v);
-        pa[u]+=pa[v]; pa[v]=u;
-        cnt--;
-        edge[u].pb({v,x});
-        edge[v].pb({u,x});
+        pa[u]+=pa[v]; 
+        pa[v]=u;
         return 1;
     }
-    bool check(set<int> vec){
-        for(int i=1;i<=n;i++) vis[i]=0;
-        for(int i=1;i<=n;i++){
-            cout<<"ke["<<i<<"]: ";
-            for(auto [x,c]:edge[i]) cout<<x<<' ';el;
-        }
-        for(int i=1;i<=n;i++) if(!vis[i])
-        {
-            vis[i]=1;
-            queue<int> qu;
-            qu.push(i);
-            set<int> s;
-            cout<<"BFS: ";
-            while(!qu.empty()){
-                int u =qu.front(); qu.pop();
-                cout<<u<<' ';
-                for(auto &[v,c]:edge[u]) if(!vis[v]){
-                    vis[v]=1;
-                    s.insert(c);
-                    qu.push(v);
-                }
-            }
-            el;
-            cout<<"s: ";
-            for(auto x:s) cout<<x<<' ';el;
-            cout<<"vec: ";
-            for(auto x:vec) cout<<x<<' ';el;
-            if(s==vec) return 1;
-        }
-        return 0;
-    }
 };
+int n,m,q,d;
+DSU MyDSU;
+DSU DistDSU[M];
+
+vt<int> vec;
+vt<pii> canh[M];
+bool check(){
+
+    int sz = (int)vec.size();
+    for(int i=1;i<=n;i++) if(MyDSU.root(i)==i)
+    {
+//        cout<<"ROOT: "<<i;el;
+        memset(mark[i],0,sz*sizeof(int));
+    }
+//    cout<<"VEC: "; for(int x:vec) cout<<x<<' ';el;
+    for(int x=0;x<sz;x++){
+        for(pii &u: canh[vec[x]]){
+            mark[MyDSU.root(u.fi)][x]=1;
+        }
+    }
+    for(int i=1;i<=n;i++){
+        if(MyDSU.root(i)==i){
+            bool ok=1;
+            for(int x=0;x<sz;x++) if(!mark[i][x]){
+                ok=0;
+                break;
+            }
+            if(ok) return 1;
+            
+        }
+    }
+        
+    return 0;
+}
 void Minnnnnnn()
 {
-    int n,m,q;
     cin>>n>>m>>q;
-    vt<vt<int>> dis(n+1,vt<int>(n+1,-1));
+    for(int i=1;i<=n;i++) memset(dis[i],-1, (n+1)*sizeof(int));
     for(int i=1;i<=m;i++){
         int u,v,c;
         cin>>u>>v>>c;
@@ -176,7 +153,7 @@ void Minnnnnnn()
         }
         else{
             minimize(dis[u][v],c);
-            minimize(dis[u][v],c);
+            minimize(dis[v][u],c);
         }
     }
     for(int k=1;k<=n;k++)
@@ -189,50 +166,68 @@ void Minnnnnnn()
                 else
                 minimize(dis[i][j],dis[i][k]+dis[k][j]);
             }
-    for(int i=1;i<=n;i++){
-        for(int j=1;j<=n;j++) cout<<dis[i][j]<<' '; el;
-    }
+    
+//    for(int i=1;i<=n;i++){
+//        for(int j=1;j<=n;j++) cout<<dis[i][j]<<' '; el;
+//    }
+//    el;
+    
     vt<int> arr;
-    arr.pb(0);
     for(int i=1;i<=n;i++)
-        for(int j=1;j<=n;j++) if(dis[i][j]!=-1)
+        for(int j=i+1;j<=n;j++) if(dis[i][j]!=-1)
             arr.pb(dis[i][j]);
     sort(all(arr));
-    int d=0;
-    map<int,int> mp;
-    for(int i=1;i<arr.size();i++) if(arr[i]!=arr[i-1]){
-        mp[arr[i]]=++d;
+    arr.resize(unique(all(arr)) - arr.begin());
+    d=(int)arr.size();
+//    for(int x:arr) cout<<x<<' ';el;
+   
+    
+    for(int i=0;i<d;i++) {
+        canh[i].clear();
+        DistDSU[i].init(n);
     }
-    vt<vt<pii>> canh(d+1);
     for(int i=1;i<=n;i++)
-        for(int j=i+1;j<=n;j++) if(dis[i][j]!=dis[0][0])
-            canh[mp[dis[i][j]]].pb({i,j});
+        for(int j=i+1;j<=n;j++) if(dis[i][j]!=-1){
+            int x = (int)(lower_bound(all(arr), dis[i][j]) - arr.begin());
+            if(DistDSU[x].merge(i, j)){
+                canh[x].pb({i,j});
+            }
+
+        }
+    
     while(q--){
         int c;
         cin>>c;
-        DSU myDSU(n);
-        set<int> s;
+        vec.clear();
+        MyDSU.init(n);
+        bool ok=1;
         for(int i=1;i<=c;i++){
             int x;
             cin>>x;
-            s.insert(x);
-            for(auto &[u,v] :canh[x]) 
+            if(!ok) continue;
+            
+            int id = (int)(lower_bound(all(arr), x) - arr.begin());
+
+            if(id>=d) ok=0;
+            
+            if(!ok) continue;
+            
+            vec.pb(id);
+            
+            for(auto &[u,v] :canh[id])
             {
-                
-                int ok= myDSU.merge(u, v, x);
-                if(ok) {
-                    cout<<"add: "<<u<<' '<<v<<' '<<x;el;
+                if(MyDSU.merge(u, v)){
+//                    cout<<"add: "<<u<<' '<<v<<' '<<id;el;
                 }
                 else{
-                    cout<<"not add: "<<u<<' '<<v<<' '<<x;el;
-
+//                    cout<<"not add: "<<u<<' '<<v<<' '<<id;el;
                 }
             }
         }
-        if(myDSU.check(s)) cout<<"Yes ";
+        if(!ok) cout<<"No ";
+        else if(check()) cout<<"Yes ";
         else cout<<"No ";
-        el;
-        
+//        el;
     }
     el;
 }
